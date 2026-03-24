@@ -1,0 +1,15 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Angular
+node_modules/
+dist/
+.angular/
+
+# General
+.DS_Store
+.env
