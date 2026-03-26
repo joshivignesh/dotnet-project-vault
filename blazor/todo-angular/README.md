@@ -1,169 +1,217 @@
 # Todo App — Angular 21 + ASP.NET Core 10
 
-A full-stack Todo app built with the latest Angular and .NET stack.
-The frontend uses Angular Signals throughout — this README explains every tech decision and why Signals were chosen over Observables for state management.
+A full stack Todo application built with the latest versions of Angular and .NET, demonstrating modern patterns including Signal-based reactivity, zoneless change detection, and minimal API design.
 
 ---
 
-## Stack
+## Tech Stack
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | Frontend | Angular | 21 |
 | Backend | ASP.NET Core Minimal API | .NET 10 |
+| Database | Entity Framework Core InMemory | 10 |
 | Language | TypeScript | 5.6 |
-| HTTP | Angular HttpClient + RxJS | 7.8 |
-| State | Angular Signals | Stable (v20+) |
+| Change Detection | Zoneless (no zone.js) | Angular 21 |
 
 ---
 
-## Why Angular 21
+## Getting Started
 
-Angular 21 is the latest release (November 2025). Key reasons for choosing it:
+### Backend
 
-**Standalone components are the default** — no NgModules needed. Every component in this project uses `standalone: true`, which means no `app.module.ts`, no `declarations` array, no ceremony. You import exactly what a component needs, right in the component file itself.
+```bash
+cd api/todo-api
+dotnet run
+# API runs at http://localhost:5000
+# Swagger UI at http://localhost:5000/swagger
+```
 
-**Signals are stable** — all reactivity primitives (`signal`, `computed`, `effect`, `input`, `output`) graduated to stable in Angular 20 and are the recommended approach in Angular 21. This project uses them throughout.
+### Frontend
 
-**`@for` and `@if` control flow** — the new built-in control flow syntax replaces `*ngFor` and `*ngIf` directives. It is more readable, has better type narrowing, and the `@empty` block on `@for` removes the need for an extra `@if` to handle empty lists.
+```bash
+cd blazor/todo-angular
+npm install
+ng serve
+# App runs at http://localhost:4200
+```
 
-**Signal-based `input()` and `output()`** — replaces `@Input()` and `@Output()` decorators. Components declare what they need at the class level instead of using decorators, making the data flow more explicit and easier to follow.
+---
+
+## Why These Technology Choices
+
+### Angular 21
+
+Angular 21 is the current stable release (November 2025). It ships with Signals as a first-class reactive primitive, zoneless change detection as stable, and no zone.js by default. These are not experimental features anymore — they are the recommended way to build Angular apps going forward.
+
+### Zoneless Change Detection
+
+Previous Angular versions used zone.js to patch browser APIs and trigger change detection automatically. This worked but came with real costs — larger bundle size, harder debugging, noisy stack traces, and performance overhead from checking the entire component tree on every async event.
+
+With zoneless, Angular only re-renders when a signal changes. The result is smaller bundles, cleaner stack traces, and predictable rendering behaviour.
+
+```typescript
+// main.ts — opting into zoneless
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideExperimentalZonelessChangeDetection(),
+  ],
+});
+```
+
+### Standalone Components
+
+Angular 21 defaults to standalone components — no NgModules required. Each component declares its own imports, making it self-contained and easier to reason about.
+
+### @if and @for Control Flow
+
+The old `*ngIf` and `*ngFor` structural directives have been replaced with built-in control flow syntax. The new syntax is faster at runtime, easier to read, and does not require importing `CommonModule`.
+
+```html
+<!-- Old way -->
+<li *ngFor="let todo of todos; trackBy: trackById">
+
+<!-- New way — Angular 17+ -->
+@for (todo of todos; track todo.id) {
+  <li>{{ todo.title }}</li>
+}
+```
+
+### ChangeDetectionStrategy.OnPush
+
+Combined with signals, `OnPush` ensures a component only re-renders when its signal inputs change. Without this, Angular would still check the component on every parent render cycle.
 
 ---
 
 ## Signals vs Observables
 
-This is the most important architectural decision in the project. Here is a direct comparison.
+This is the most important architectural decision in modern Angular. Here is a clear comparison:
 
-### What is a Signal?
+### At a glance
 
-A Signal is a value that Angular tracks. When it changes, only the parts of the UI that read it are updated — no change detection cycle needed, no subscription management.
+| | Signals | Observables |
+|--|---------|-------------|
+| Import | `@angular/core` | `rxjs` |
+| Read value | `mySignal()` | Must subscribe |
+| Derived state | `computed()` | `map()`, `combineLatest()` |
+| Side effects | `effect()` | `tap()`, `subscribe()` |
+| HTTP calls | `httpResource()` | `HttpClient` + `async` pipe |
+| Unsubscribe | Automatic | Manual (`takeUntil`, `async` pipe) |
+| Learning curve | Low | High |
+| Fine-grained rendering | Yes | No (requires `async` pipe tricks) |
+| Best for | UI state, derived values | Complex async streams, WebSockets |
+
+---
+
+### Signals in this project
 
 ```typescript
-// Create a signal
-const count = signal(0);
+// A writable signal — local state
+readonly newTitle = signal('');
 
-// Read it — call it like a function
-console.log(count()); // 0
+// A computed signal — derived automatically, no subscription needed
+readonly completedCount = computed(() =>
+  (this.todos.value() ?? []).filter(t => t.isComplete).length
+);
 
-// Update it
-count.set(1);
-count.update(v => v + 1);
+// httpResource — signal-based HTTP, reloads reactively
+readonly todos = httpResource<Todo[]>(this.apiUrl);
 
-// Derive new values — recomputes automatically when count changes
-const doubled = computed(() => count() * 2);
+// Reading a signal in a template — just call it like a function
+{{ todoService.pendingCount() }}
 ```
 
-### What is an Observable?
+No `subscribe()`. No `unsubscribe()`. No memory leaks. The template re-renders only when the signal value changes.
 
-An Observable represents a stream of values over time. It is lazy — nothing happens until something subscribes to it. It is the right tool for async data flows, event streams, and complex transformations.
+---
 
-```typescript
-// Observable — lazy, async, needs subscription
-this.http.get<Todo[]>('/todos').subscribe(todos => {
-  this.todos = todos;
-});
-```
-
-### Side by Side Comparison
-
-| | Signals | Observables (RxJS) |
-|---|---|---|
-| **Best for** | Synchronous UI state | Async data streams, HTTP, events |
-| **Reading a value** | `todos()` — call it | Must subscribe or use `async` pipe |
-| **Updating** | `todos.set([...])` | Emit a new value from a Subject |
-| **Derived values** | `computed(() => ...)` | `pipe(map(...))` |
-| **Side effects** | `effect(() => ...)` | `tap(...)` in a pipe |
-| **Subscription management** | None — Angular handles it | Must unsubscribe to avoid leaks |
-| **Change detection** | Fine-grained — only re-renders what changed | Zone.js detects change after async ops |
-| **Learning curve** | Low — reads like plain variables | Higher — operators, marble diagrams |
-| **Async support** | No native async (use `resource()` for HTTP) | First-class — built for async |
-
-### How this project uses both
-
-This project deliberately uses both, each where it is strongest:
-
-**Signals are used for state** — the list of todos, loading flag, error message, and derived counts (`totalCount`, `doneCount`, `pendingCount`) are all signals in `TodoService`. The template reads them directly — no `async` pipe, no subscription, no memory leaks.
+### The equivalent with Observables
 
 ```typescript
-// Service — state as signals
-private readonly _todos = signal<Todo[]>([]);
-readonly totalCount   = computed(() => this._todos().length);
-readonly doneCount    = computed(() => this._todos().filter(t => t.isComplete).length);
-```
+// Observable approach — more ceremony
+private destroy$ = new Subject<void>();
 
-**Observables are used for HTTP** — `HttpClient` returns Observables. That is intentional. HTTP is async, can fail, can be cancelled, and can be composed. RxJS `tap` is used to update the signal when the HTTP call succeeds.
+todos$: Observable<Todo[]>;
+completedCount$: Observable<number>;
 
-```typescript
-// HTTP returns Observable — update signal on success via tap
-loadAll(): Observable<Todo[]> {
-  return this.http.get<Todo[]>(this.apiUrl).pipe(
-    tap(todos => this._todos.set(todos))
+ngOnInit() {
+  this.todos$ = this.http.get<Todo[]>(this.apiUrl);
+  this.completedCount$ = this.todos$.pipe(
+    map(todos => todos.filter(t => t.isComplete).length)
   );
+}
+
+ngOnDestroy() {
+  this.destroy$.next();
+  this.destroy$.complete();
 }
 ```
 
-**The pattern:** HTTP (Observable) fetches data → on success, `tap` writes to a Signal → template reads the Signal. The two systems complement each other cleanly.
+And in the template you need the `async` pipe on every binding, which triggers separate subscriptions and can cause multiple HTTP requests if not shared.
 
-### When to use which
+---
 
-Use **Signals** when:
-- Managing component or service state
-- Deriving values from other state (`computed`)
-- Replacing `BehaviorSubject` + `async` pipe patterns
-- You want fine-grained reactivity without zone.js
+### When to still use Observables
 
-Use **Observables** when:
-- Making HTTP requests
-- Listening to DOM events over time
-- Combining multiple async streams (`combineLatest`, `switchMap`)
-- You need cancellation or retry logic
+Signals do not replace Observables entirely. Observables are still the right tool when:
+
+- Streaming data arrives over time — WebSockets, SSE, polling
+- You need complex stream operators — `debounceTime`, `switchMap`, `mergeMap`
+- You are combining multiple async sources with `combineLatest` or `forkJoin`
+- You are working with existing RxJS-based libraries
+
+Angular's `httpResource()` uses `HttpClient` under the hood, so interceptors, auth headers, and retry logic all continue to work exactly as before.
+
+---
+
+### The hybrid approach
+
+Angular 21 ships `rxResource()` for cases where your data source is already an Observable:
+
+```typescript
+// Bridge between Observables and Signals
+readonly todos = rxResource({
+  loader: () => this.http.get<Todo[]>(this.apiUrl)
+});
+
+// Now todos.value() is a signal you can use directly in templates
+```
+
+This lets you use Signals in the template while keeping Observable-based services unchanged — a practical migration path for large codebases.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/todos` | Get all todos |
+| GET | `/todos/{id}` | Get by ID |
+| POST | `/todos` | Create todo |
+| PUT | `/todos/{id}` | Update todo |
+| DELETE | `/todos/{id}` | Delete todo |
 
 ---
 
 ## Project Structure
 
 ```
-todo-angular/
-├── src/
-│   ├── main.ts                          ← bootstraps the app, provides HttpClient + Router
-│   └── app/
-│       ├── app.component.ts             ← root component, imports TodoListComponent
-│       ├── models/
-│       │   └── todo.model.ts            ← Todo interface
-│       ├── services/
-│       │   └── todo.service.ts          ← signals state + HTTP via Observables
-│       └── components/
-│           ├── todo-list/               ← reads service signals, handles user input
-│           └── todo-item/               ← signal input(), signal output()
-└── package.json
+blazor/todo-angular/
+├── angular.json
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── main.ts                          ← zoneless bootstrap
+    └── app/
+        ├── app.component.ts             ← root component, signals + @for/@if
+        ├── models/
+        │   └── todo.model.ts            ← Todo and CreateTodo interfaces
+        └── services/
+            └── todo.service.ts          ← httpResource, computed signals
+
+api/todo-api/
+├── Program.cs                           ← minimal API endpoints
+├── TodoApi.csproj
+├── Models/Todo.cs
+└── Data/TodoDbContext.cs
 ```
-
----
-
-## Running the App
-
-```bash
-# Install dependencies
-npm install
-
-# Start Angular dev server (connects to backend on :5000)
-npm start
-```
-
-Make sure the ASP.NET Core API in `api/todo-api/` is running on port 5000 first.
-
----
-
-## Key Angular 21 APIs Used
-
-| API | Replaces | Why |
-|-----|---------|-----|
-| `signal()` | `BehaviorSubject` | Simpler state, no subscription needed |
-| `computed()` | `pipe(map(...))` for derived state | Lazily recomputes only when dependencies change |
-| `input.required<T>()` | `@Input()` decorator | Signal-based, type-safe, no decorator magic |
-| `output<T>()` | `@Output() EventEmitter` | Consistent with signal model |
-| `inject()` | Constructor injection | Works outside constructors, cleaner code |
-| `@for ... @empty` | `*ngFor` + extra `*ngIf` | Built-in, better type narrowing |
-| `@if` | `*ngIf` | Built-in control flow, no structural directive import |
-| `standalone: true` | NgModule declarations | Import only what you need, per component |
