@@ -1,15 +1,19 @@
-# .NET
+# ── .NET ──────────────────────────────────────
 bin/
 obj/
 *.user
 *.suo
 .vs/
+*.log
+appsettings.Development.json
 
-# Angular
+# ── Angular / Node ────────────────────────────
 node_modules/
 dist/
 .angular/
+npm-debug.log*
+yarn-error.log*
 
-# General
+# ── OS ────────────────────────────────────────
 .DS_Store
-.env
+Thumbs.db
