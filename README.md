@@ -1,30 +1,28 @@
 # 🔷 dotnet-project-vault
 
-A growing collection of .NET 10 projects — from console basics to full stack applications with Angular, Blazor, microservices, and Azure integrations.
-
-Every project is self-contained with its own README, focused on using the latest stable APIs and patterns.
+A growing collection of .NET 10 projects — each one a self-contained full stack application with its own backend and frontend.
 
 ---
 
 ## 📁 Projects
 
-| Project | Stack | Description |
-|---------|-------|-------------|
-| [Todo App](blazor/todo-angular/) | ASP.NET Core 10 + Angular 21 | Full stack CRUD app with Signal-based reactivity and zoneless change detection |
+| Project | Backend | Frontend | Description |
+|---------|---------|----------|-------------|
+| [todo-app](todo-app/) | ASP.NET Core 10 Minimal API | Angular 21 | Full stack CRUD with Signals and zoneless change detection |
+| [weather-app](weather-app/) | ASP.NET Core 10 Minimal API | Angular 21 | OpenWeatherMap integration with caching and forecast |
 
-> More projects coming — Blazor WASM, gRPC microservices, Azure Functions, and more.
+> More coming — Auth API with JWT, SignalR chat app, gRPC microservice.
 
 ---
 
 ## 🗂 Structure
 
+Each project is self-contained:
+
 ```
-dotnet-project-vault/
-├── basics/          ← C# fundamentals and console apps
-├── api/             ← ASP.NET Core Minimal API projects
-├── blazor/          ← Angular and Blazor frontend projects
-├── microservices/   ← gRPC and distributed service examples
-└── azure/           ← Azure SDK, Functions, and cloud integrations
+<project-name>/
+├── backend/    ← ASP.NET Core .NET 10 API
+└── frontend/   ← Angular 21 app
 ```
 
 ---
@@ -37,31 +35,18 @@ dotnet-project-vault/
 | Node.js | 20+ |
 | Angular CLI | 21+ |
 
-```bash
-# Check your versions
-dotnet --version
-node --version
-ng version
-```
-
 ---
 
 ## 🚀 Running Any Project
 
-Each project folder has its own README with setup instructions. The general pattern is:
-
 ```bash
 # Backend
-cd api/<project-name>
+cd <project>/backend
 dotnet run
 
 # Frontend
-cd blazor/<project-name>
+cd <project>/frontend
 npm install && ng serve
 ```
 
----
-
-## 🤝 Contributing
-
-Each new project should follow the existing folder structure and include its own `README.md` explaining what was built and why the technology choices were made.
+Each project folder has its own README with full setup instructions.
