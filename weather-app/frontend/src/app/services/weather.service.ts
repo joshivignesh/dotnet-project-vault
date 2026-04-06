@@ -7,8 +7,10 @@ import { WeatherSummary, ForecastSummary } from '../models/weather.model';
 export class WeatherService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:5000';
+  private readonly maxHistory = 5;
 
   readonly city = signal('');
+  readonly history = signal<string[]>([]);
 
   readonly weather = rxResource<WeatherSummary, string>({
     request: () => this.city(),
@@ -31,6 +33,16 @@ export class WeatherService {
   );
 
   search(city: string) {
-    this.city.set(city.trim());
+    const trimmed = city.trim();
+    if (!trimmed) return;
+    this.city.set(trimmed);
+    this.addToHistory(trimmed);
+  }
+
+  private addToHistory(city: string) {
+    this.history.update(prev => {
+      const filtered = prev.filter(c => c.toLowerCase() !== city.toLowerCase());
+      return [city, ...filtered].slice(0, this.maxHistory);
+    });
   }
 }
