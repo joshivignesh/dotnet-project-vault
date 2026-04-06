@@ -146,3 +146,41 @@ h1 {
 /* States */
 .loading, .empty { text-align: center; color: rgba(255,255,255,0.8); padding: 48px 0; font-size: 1rem; }
 .error { background: #fff0f0; color: #c0392b; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 16px; }
+
+/* Search history */
+.history {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.history-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+  font-weight: 500;
+}
+
+.history-chip {
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.history-chip:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.6);
+}
+
+.history-chip.active {
+  background: rgba(255,255,255,0.25);
+  border-color: white;
+  color: white;
+  font-weight: 600;
+}
