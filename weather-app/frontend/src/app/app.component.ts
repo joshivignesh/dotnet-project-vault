@@ -2,11 +2,12 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { WeatherService } from './services/weather.service';
 import { WeatherCardComponent } from './components/weather-card.component';
 import { ForecastComponent } from './components/forecast.component';
+import { SearchHistoryComponent } from './components/search-history.component';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WeatherCardComponent, ForecastComponent],
+  imports: [WeatherCardComponent, ForecastComponent, SearchHistoryComponent],
   template: `
     <div class="container">
       <h1>🌤 Weather</h1>
@@ -24,6 +25,8 @@ import { ForecastComponent } from './components/forecast.component';
         </button>
       </div>
 
+      <app-search-history />
+
       @if (svc.city()) {
         <app-weather-card />
         <app-forecast />
@@ -39,5 +42,6 @@ export class AppComponent {
     const city = this.input().trim();
     if (!city) return;
     this.svc.search(city);
+    this.input.set('');
   }
 }
