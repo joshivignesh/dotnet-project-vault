@@ -1,0 +1,30 @@
+# ============================================================
+# FILE: prometheus.yml
+# PURPOSE: Configuration that tells Prometheus WHAT to monitor.
+#   Without this, Prometheus is running but collecting nothing.
+#
+# ANALOGY: If Prometheus is a newspaper delivery service, this
+#   file is the list of addresses to deliver to. Each "job"
+#   is one application Prometheus checks on regularly.
+# ============================================================
+
+global:
+  scrape_interval: 5s       # Check every 5 seconds (default is 60s)
+  evaluation_interval: 5s   # Evaluate alerting rules every 5 seconds
+
+scrape_configs:
+  # JOB 1: Monitor our .NET API
+  - job_name: "observability-demo"
+    # Prometheus will call GET http://api:8080/metrics every 5s
+    # The /metrics endpoint is created by AddPrometheusExporter()
+    # in Program.cs
+    static_configs:
+      - targets: ["api:8080"]
+        labels:
+          environment: "development"
+          team: "backend"
+
+  # JOB 2: Monitor Prometheus itself (yes, it monitors itself!)
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
