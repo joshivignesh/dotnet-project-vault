@@ -35,21 +35,21 @@ export class WeatherService {
     !!this.weather.error() || !!this.forecast.error()
   );
 
-  search(city: string) {
-    const trimmed = city.trim();
-    if (!trimmed) return;
-    this.city.set(trimmed);
-    this.addToHistory(trimmed);
+  convert(celsius: number): number {
+    return this.unit() === 'F'
+      ? Math.round((celsius * 9) / 5 + 32)
+      : Math.round(celsius);
   }
 
   toggleUnit() {
     this.unit.update(u => u === 'C' ? 'F' : 'C');
   }
 
-  convertTemp(celsius: number): number {
-    return this.unit() === 'F'
-      ? Math.round((celsius * 9 / 5) + 32)
-      : Math.round(celsius);
+  search(city: string) {
+    const trimmed = city.trim();
+    if (!trimmed) return;
+    this.city.set(trimmed);
+    this.addToHistory(trimmed);
   }
 
   private addToHistory(city: string) {
