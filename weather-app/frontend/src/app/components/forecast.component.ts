@@ -1,12 +1,10 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { WeatherService } from '../services/weather.service';
 import { ForecastItem } from '../models/weather.model';
 
 @Component({
   selector: 'app-forecast',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe],
   template: `
     @if (svc.forecast.value(); as f) {
       <div class="forecast">
@@ -20,7 +18,7 @@ import { ForecastItem } from '../models/weather.model';
                 [alt]="item.description"
               />
               <div class="forecast-temp">
-                {{ svc.convertTemp(item.temperature) }}°{{ svc.unit() }}
+                {{ svc.convert(item.temperature) }}°{{ svc.unit() }}
               </div>
               <div class="forecast-desc">{{ item.condition }}</div>
             </div>
