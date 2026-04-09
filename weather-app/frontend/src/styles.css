@@ -235,3 +235,27 @@ h1 {
   background: rgba(255,255,255,0.25);
   border-color: white;
 }
+
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  display: block;
+  margin-bottom: 10px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.skeleton-row .skeleton {
+  margin-bottom: 0;
+}
