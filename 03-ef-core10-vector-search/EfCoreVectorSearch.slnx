@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EfCoreVectorSearch.Api/EfCoreVectorSearch.Api.csproj" />
+    <Project Path="src/EfCoreVectorSearch.Domain/EfCoreVectorSearch.Domain.csproj" />
+    <Project Path="src/EfCoreVectorSearch.Infrastructure/EfCoreVectorSearch.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EfCoreVectorSearch.Tests/EfCoreVectorSearch.Tests.csproj" />
+  </Folder>
+</Solution>

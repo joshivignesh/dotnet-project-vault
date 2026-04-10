@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MinimalApiJwtOpenApi.Api/MinimalApiJwtOpenApi.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MinimalApiJwtOpenApi.Tests/MinimalApiJwtOpenApi.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,11 @@
+@JobBoard.Api_HostAddress = http://localhost:5188
+
+GET {{JobBoard.Api_HostAddress}}/health
+Accept: application/json
+
+###
+
+GET {{JobBoard.Api_HostAddress}}/api/jobs
+Accept: application/json
+
+###

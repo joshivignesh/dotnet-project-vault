@@ -1,0 +1,39 @@
+name: sonarqube-dotnet
+
+on:
+  push:
+    paths:
+      - "08-sonarqube-github-actions/**"
+      - ".github/workflows/sonarqube-dotnet.yml"
+  pull_request:
+    paths:
+      - "08-sonarqube-github-actions/**"
+
+jobs:
+  build-test-analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore 08-sonarqube-github-actions/SonarGithubActions.slnx
+
+      - name: Build
+        run: dotnet build 08-sonarqube-github-actions/SonarGithubActions.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test 08-sonarqube-github-actions/SonarGithubActions.slnx --configuration Release --no-build
+
+      - name: SonarQube Placeholder
+        if: ${{ false }}
+        run: |
+          echo "Configure SONAR_TOKEN and SONAR_HOST_URL secrets, then add scanner begin/end commands."
