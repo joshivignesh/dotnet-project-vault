@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { WeatherSummary, ForecastSummary } from '../models/weather.model';
 
+export type TemperatureUnit = 'C' | 'F';
+
 @Injectable({ providedIn: 'root' })
 export class WeatherService {
   private readonly http = inject(HttpClient);
@@ -11,6 +13,7 @@ export class WeatherService {
 
   readonly city = signal('');
   readonly history = signal<string[]>([]);
+  readonly unit = signal<TemperatureUnit>('C');
 
   readonly weather = rxResource<WeatherSummary, string>({
     request: () => this.city(),
@@ -31,6 +34,16 @@ export class WeatherService {
   readonly hasError = computed(() =>
     !!this.weather.error() || !!this.forecast.error()
   );
+
+  convert(celsius: number): number {
+    return this.unit() === 'F'
+      ? Math.round((celsius * 9) / 5 + 32)
+      : Math.round(celsius);
+  }
+
+  toggleUnit() {
+    this.unit.update(u => u === 'C' ? 'F' : 'C');
+  }
 
   search(city: string) {
     const trimmed = city.trim();

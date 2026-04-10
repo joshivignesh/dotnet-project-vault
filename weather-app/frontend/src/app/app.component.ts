@@ -10,7 +10,12 @@ import { SearchHistoryComponent } from './components/search-history.component';
   imports: [WeatherCardComponent, ForecastComponent, SearchHistoryComponent],
   template: `
     <div class="container">
-      <h1>🌤 Weather</h1>
+      <div class="header">
+        <h1>🌤 Weather</h1>
+        <button class="unit-toggle" (click)="svc.toggleUnit()">
+          °{{ svc.unit() === 'C' ? 'F' : 'C' }}
+        </button>
+      </div>
 
       <div class="search">
         <input
