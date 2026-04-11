@@ -16,7 +16,11 @@ Build a recruiter-facing job board platform with a modern frontend and a .NET 10
 - infra
 
 ## Milestone status
-Scaffolded (structure and docs) + minimal backend and frontend implemented
+Vertical slice 1 complete: token-secured recruiter flow with SQL persistence and containerized local run.
+
+Vertical slice 2 complete: backend integration tests for auth/jobs flow plus GitHub Actions CI workflow.
+
+Vertical slice 3 complete: live deployment workflow added for Azure Container Apps (API) and Vercel (frontend).
 
 ## Next milestone
-Scaffold 01-aspnetcore10-clean-architecture.
+Capture runtime screenshots (UI and OpenAPI) from running services.

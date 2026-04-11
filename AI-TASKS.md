@@ -42,6 +42,6 @@ When continuing work:
 ## Next exact instruction
 
 Read the repo instruction files first.
-Implement the first FULLSTACK-01 vertical slice end-to-end.
-Prefer production-minded defaults, tests, and clear documentation updates.
+Capture runtime screenshots for FULLSTACK-01 (UI and OpenAPI) and place them under docs/screenshots.
+Update FULLSTACK-01 docs and root docs/screenshots index accordingly.
 Update STATUS.md and stop.

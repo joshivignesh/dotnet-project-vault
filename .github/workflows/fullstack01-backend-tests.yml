@@ -1,0 +1,30 @@
+name: fullstack01-backend-tests
+
+on:
+  push:
+    paths:
+      - "FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/**"
+      - ".github/workflows/fullstack01-backend-tests.yml"
+  pull_request:
+    paths:
+      - "FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/**"
+      - ".github/workflows/fullstack01-backend-tests.yml"
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore backend tests
+        run: dotnet restore FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/tests/JobBoard.Api.IntegrationTests/JobBoard.Api.IntegrationTests.csproj
+
+      - name: Run backend integration tests
+        run: dotnet test FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/tests/JobBoard.Api.IntegrationTests/JobBoard.Api.IntegrationTests.csproj --configuration Release --no-restore

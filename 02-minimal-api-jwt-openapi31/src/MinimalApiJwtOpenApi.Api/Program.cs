@@ -95,3 +95,5 @@ app.MapGet("/api/secure", (ClaimsPrincipal user) =>
 app.Run();
 
 public record LoginRequest(string Username, string Password);
+
+public partial class Program;

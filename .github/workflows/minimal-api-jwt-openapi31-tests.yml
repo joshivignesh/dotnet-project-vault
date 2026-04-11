@@ -1,0 +1,33 @@
+name: minimal-api-jwt-openapi31-tests
+
+on:
+  push:
+    paths:
+      - "02-minimal-api-jwt-openapi31/**"
+      - ".github/workflows/minimal-api-jwt-openapi31-tests.yml"
+  pull_request:
+    paths:
+      - "02-minimal-api-jwt-openapi31/**"
+      - ".github/workflows/minimal-api-jwt-openapi31-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore 02-minimal-api-jwt-openapi31/MinimalApiJwtOpenApi.slnx
+
+      - name: Build
+        run: dotnet build 02-minimal-api-jwt-openapi31/MinimalApiJwtOpenApi.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test 02-minimal-api-jwt-openapi31/MinimalApiJwtOpenApi.slnx --configuration Release --no-build

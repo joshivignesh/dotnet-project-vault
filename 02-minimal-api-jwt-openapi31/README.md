@@ -10,10 +10,10 @@ Planned sample for minimal APIs with JWT authentication and modern OpenAPI docum
 - OpenAPI
 
 ## Status
-Scaffolded
+Scaffold complete with endpoint integration tests and project-scoped CI workflow.
 
 ## Next step
-Expand token issuing to real identity store and add endpoint tests.
+Expand token issuing to a real identity store and role model.
 
 ## Current scaffold
 - MinimalApiJwtOpenApi.slnx
@@ -25,3 +25,12 @@ Expand token issuing to real identity store and add endpoint tests.
 - POST /api/auth/token
 - GET /api/public
 - GET /api/secure (requires bearer token)
+
+## Test coverage
+- GET /health returns 200
+- POST /api/auth/token returns bearer token for demo credentials
+- GET /api/secure returns 401 without token
+- GET /api/secure returns 200 with valid token
+
+## CI workflow
+- .github/workflows/minimal-api-jwt-openapi31-tests.yml

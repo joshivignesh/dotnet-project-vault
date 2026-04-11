@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: jobboard-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "JobBoard_SA_Passw0rd!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - jobboard-sql-data:/var/opt/mssql
+
+  api:
+    build:
+      context: ../backend/src/JobBoard.Api
+      dockerfile: Dockerfile
+    container_name: jobboard-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=JobBoardDb;User Id=sa;Password=JobBoard_SA_Passw0rd!;TrustServerCertificate=True;"
+      Frontend__AllowedOrigin: "http://localhost:3000"
+      Jwt__Issuer: "JobBoardApi"
+      Jwt__Audience: "JobBoardWeb"
+      Jwt__Key: "dev-only-change-me-please-change-me"
+    ports:
+      - "5188:8080"
+    depends_on:
+      - db
+
+  web:
+    build:
+      context: ../frontend/web
+      dockerfile: Dockerfile
+    container_name: jobboard-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:5188"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  jobboard-sql-data:

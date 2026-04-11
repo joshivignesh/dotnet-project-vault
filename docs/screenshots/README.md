@@ -15,4 +15,6 @@ Track required screenshots for recruiter-friendly project presentation.
 - Example: fullstack-01-home.png
 
 ## Status
-Placeholder folder ready. Add actual screenshots in a later milestone.
+Placeholder folder ready.
+Architecture visuals are now available under FULLSTACK-01 docs as SVG assets.
+Runtime UI/OpenAPI screenshots still pending capture in a later milestone.

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-label="JobBoard architecture overview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1b2a"/>
+      <stop offset="100%" stop-color="#1b263b"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 28px Segoe UI, Arial, sans-serif; fill: #f8f9fa; }
+      .subtitle { font: 500 14px Segoe UI, Arial, sans-serif; fill: #cbd5e1; }
+      .boxTitle { font: 700 16px Segoe UI, Arial, sans-serif; fill: #0f172a; }
+      .boxBody { font: 500 13px Segoe UI, Arial, sans-serif; fill: #334155; }
+      .label { font: 600 13px Segoe UI, Arial, sans-serif; fill: #e2e8f0; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="520" fill="url(#bg)"/>
+  <text x="40" y="52" class="title">FULLSTACK-01 JobBoard Architecture</text>
+  <text x="40" y="76" class="subtitle">Next.js 15 + ASP.NET Core 10 + EF Core 10 + SQL Server + JWT</text>
+
+  <rect x="50" y="130" rx="16" ry="16" width="240" height="130" fill="#e0f2fe"/>
+  <text x="70" y="165" class="boxTitle">Web UI</text>
+  <text x="70" y="190" class="boxBody">Next.js 15 (TypeScript)</text>
+  <text x="70" y="212" class="boxBody">Login + Recruiter Job Posting</text>
+
+  <rect x="360" y="120" rx="16" ry="16" width="260" height="150" fill="#dcfce7"/>
+  <text x="380" y="155" class="boxTitle">JobBoard API</text>
+  <text x="380" y="180" class="boxBody">Minimal API (.NET 10)</text>
+  <text x="380" y="202" class="boxBody">JWT auth + secured endpoints</text>
+  <text x="380" y="224" class="boxBody">CORS + OpenAPI + health</text>
+
+  <rect x="700" y="130" rx="16" ry="16" width="210" height="130" fill="#fee2e2"/>
+  <text x="720" y="165" class="boxTitle">SQL Server</text>
+  <text x="720" y="190" class="boxBody">EF Core persistence</text>
+  <text x="720" y="212" class="boxBody">Job postings store</text>
+
+  <rect x="360" y="320" rx="16" ry="16" width="260" height="130" fill="#ede9fe"/>
+  <text x="380" y="355" class="boxTitle">Container Runtime</text>
+  <text x="380" y="380" class="boxBody">Dockerfiles + compose</text>
+  <text x="380" y="402" class="boxBody">Local full-stack execution</text>
+
+  <line x1="290" y1="194" x2="360" y2="194" stroke="#e2e8f0" stroke-width="3"/>
+  <polygon points="360,194 348,187 348,201" fill="#e2e8f0"/>
+  <text x="305" y="182" class="label">Bearer token</text>
+
+  <line x1="620" y1="194" x2="700" y2="194" stroke="#e2e8f0" stroke-width="3"/>
+  <polygon points="700,194 688,187 688,201" fill="#e2e8f0"/>
+  <text x="634" y="182" class="label">EF Core</text>
+
+  <line x1="490" y1="270" x2="490" y2="320" stroke="#e2e8f0" stroke-width="3"/>
+  <polygon points="490,320 483,308 497,308" fill="#e2e8f0"/>
+</svg>

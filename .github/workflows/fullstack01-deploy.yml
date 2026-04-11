@@ -1,0 +1,153 @@
+name: fullstack01-deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "FULLSTACK-01-nextjs15-dotnet10-jobboard/**"
+      - ".github/workflows/fullstack01-deploy.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Run backend integration tests
+        run: dotnet test FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/tests/JobBoard.Api.IntegrationTests/JobBoard.Api.IntegrationTests.csproj --configuration Release
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build frontend
+        working-directory: FULLSTACK-01-nextjs15-dotnet10-jobboard/frontend/web
+        run: |
+          npm ci
+          npm run build
+
+  deploy-api:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required API deployment secrets
+        id: api-secrets
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_LOCATION: ${{ secrets.AZURE_LOCATION }}
+          AZURE_CONTAINER_APP_NAME: ${{ secrets.AZURE_CONTAINER_APP_NAME }}
+          FULLSTACK01_DB_CONNECTION_STRING: ${{ secrets.FULLSTACK01_DB_CONNECTION_STRING }}
+          FULLSTACK01_JWT_KEY: ${{ secrets.FULLSTACK01_JWT_KEY }}
+          FULLSTACK01_FRONTEND_ORIGIN: ${{ secrets.FULLSTACK01_FRONTEND_ORIGIN }}
+        run: |
+          if [ -n "$AZURE_CLIENT_ID" ] && [ -n "$AZURE_TENANT_ID" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] && [ -n "$AZURE_RESOURCE_GROUP" ] && [ -n "$AZURE_LOCATION" ] && [ -n "$AZURE_CONTAINER_APP_NAME" ] && [ -n "$FULLSTACK01_DB_CONNECTION_STRING" ] && [ -n "$FULLSTACK01_JWT_KEY" ] && [ -n "$FULLSTACK01_FRONTEND_ORIGIN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Missing API deployment secrets. Skipping API deployment."
+          fi
+
+      - name: Azure login (OIDC)
+        if: steps.api-secrets.outputs.ready == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure containerapp extension
+        if: steps.api-secrets.outputs.ready == 'true'
+        run: az extension add --name containerapp --upgrade
+
+      - name: Deploy API to Azure Container Apps
+        if: steps.api-secrets.outputs.ready == 'true'
+        run: |
+          az containerapp up \
+            --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --location "${{ secrets.AZURE_LOCATION }}" \
+            --source "FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/src/JobBoard.Api" \
+            --target-port 8080 \
+            --ingress external \
+            --env-vars \
+              ConnectionStrings__DefaultConnection="${{ secrets.FULLSTACK01_DB_CONNECTION_STRING }}" \
+              Frontend__AllowedOrigin="${{ secrets.FULLSTACK01_FRONTEND_ORIGIN }}" \
+              Jwt__Issuer="JobBoardApi" \
+              Jwt__Audience="JobBoardWeb" \
+              Jwt__Key="${{ secrets.FULLSTACK01_JWT_KEY }}"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-api]
+    if: github.ref == 'refs/heads/main'
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      NEXT_PUBLIC_API_BASE_URL: ${{ secrets.FULLSTACK01_API_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required frontend deployment secrets
+        id: web-secrets
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ] && [ -n "$NEXT_PUBLIC_API_BASE_URL" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Missing frontend deployment secrets. Skipping frontend deployment."
+          fi
+
+      - name: Setup Node.js
+        if: steps.web-secrets.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install frontend dependencies
+        if: steps.web-secrets.outputs.ready == 'true'
+        working-directory: FULLSTACK-01-nextjs15-dotnet10-jobboard/frontend/web
+        run: npm ci
+
+      - name: Install Vercel CLI
+        if: steps.web-secrets.outputs.ready == 'true'
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        if: steps.web-secrets.outputs.ready == 'true'
+        working-directory: FULLSTACK-01-nextjs15-dotnet10-jobboard/frontend/web
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build production artifacts
+        if: steps.web-secrets.outputs.ready == 'true'
+        working-directory: FULLSTACK-01-nextjs15-dotnet10-jobboard/frontend/web
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy to Vercel
+        if: steps.web-secrets.outputs.ready == 'true'
+        working-directory: FULLSTACK-01-nextjs15-dotnet10-jobboard/frontend/web
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"

@@ -6,6 +6,19 @@ obj/
 .vs/
 *.log
 appsettings.Development.json
+TestResults/
+*.trx
+coverage/
+coverage-results/
+*.coverage
+*.coveragexml
+
+# Local database artifacts
+*.mdf
+*.ldf
+*.ndf
+*.sqlite
+*.sqlite3
 
 # ── Angular / Node ────────────────────────────
 node_modules/
@@ -13,7 +26,17 @@ dist/
 .angular/
 npm-debug.log*
 yarn-error.log*
+.next/
+out/
+.turbo/
+.vercel/
+pnpm-debug.log*
 
 # ── OS ────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── Editor / temp ─────────────────────────────
+.idea/
+*.tmp
+*.temp

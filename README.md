@@ -28,14 +28,14 @@ The goal is not to dump random code samples. The goal is to present a focused se
 | Project | Focus | Status |
 |---|---|---|
 | 01-aspnetcore10-clean-architecture | API structure, clean layering, enterprise patterns | Scaffolded |
-| 02-minimal-api-jwt-openapi31 | Minimal APIs, auth, modern API docs | Scaffolded |
+| 02-minimal-api-jwt-openapi31 | Minimal APIs, auth, modern API docs | Tested + CI wired |
 | 03-ef-core10-vector-search | AI-adjacent data patterns with modern EF Core | Scaffolded |
 | 04-signalr-realtime-dashboard | Real-time communication patterns | Planned |
 | 05-keda-worker-net10 | Worker service autoscaling concepts | Scaffolded |
 | 06-aspire13-microservices | Distributed app orchestration | Scaffolded |
 | 07-rate-limiting-middleware | Middleware and request pipeline engineering | Scaffolded |
 | 08-sonarqube-github-actions | Code quality and CI integration | Scaffolded |
-| FULLSTACK-01-nextjs15-dotnet10-jobboard | Modern frontend + .NET backend full-stack app | MVP scaffolded |
+| FULLSTACK-01-nextjs15-dotnet10-jobboard | Modern frontend + .NET backend full-stack app | Vertical slice 1 complete |
 | FULLSTACK-02-blazor-saas-platform | .NET-centric full-stack SaaS sample | Planned |
 
 ## Recruiter view

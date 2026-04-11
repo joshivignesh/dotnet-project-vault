@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^Set-Location \"e:/Vignesh/My Code workouts/GitHub/dotnet-project-vault\"; dotnet test \"FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/tests/JobBoard\\.Api\\.IntegrationTests/JobBoard\\.Api\\.IntegrationTests\\.csproj\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

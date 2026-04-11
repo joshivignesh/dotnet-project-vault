@@ -9,12 +9,13 @@ Provide a Next.js 15 interface for job discovery, filtering, and application flo
 - API integration with backend
 
 ## Status
-Minimal working frontend scaffold complete
+Authenticated recruiter UI implemented for the first end-to-end vertical slice.
 
 ## Current behavior
-- Fetches jobs from GET /api/jobs
-- Renders job cards on the landing page
-- Shows a helpful message if backend is unavailable
+- Shows login form and requests JWT from POST /api/auth/token
+- Stores access token in local storage for local demo use
+- Fetches jobs from secured GET /api/jobs with bearer token
+- Allows creating jobs through secured POST /api/jobs
 
 ## Run locally
 1. Change to frontend app folder:
