@@ -1,4 +1,4 @@
-name: sonarqube-dotnet
+name: 08 – SonarCloud Code Quality CI
 
 on:
   push:
@@ -9,31 +9,78 @@ on:
     paths:
       - "08-sonarqube-github-actions/**"
 
+defaults:
+  run:
+    working-directory: 08-sonarqube-github-actions
+
 jobs:
   build-test-analyze:
+    name: Build, Test & SonarCloud Analysis
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Required for SonarCloud blame data
 
-      - name: Setup .NET
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: "10.x"
+
+      - name: Install dotnet-sonarscanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Install dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
 
       - name: Restore
-        run: dotnet restore 08-sonarqube-github-actions/SonarGithubActions.slnx
+        run: dotnet restore SonarGithubActions.slnx
+
+      - name: SonarCloud Begin Analysis
+        # Requires SONAR_TOKEN secret — see README for setup instructions
+        if: ${{ env.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+            /o:"${{ vars.SONAR_ORGANIZATION }}" \
+            /d:sonar.login="${SONAR_TOKEN}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml" \
+            /d:sonar.qualitygate.wait=true
 
       - name: Build
-        run: dotnet build 08-sonarqube-github-actions/SonarGithubActions.slnx --configuration Release --no-restore
+        run: dotnet build SonarGithubActions.slnx -c Release --no-restore
 
-      - name: Test
-        run: dotnet test 08-sonarqube-github-actions/SonarGithubActions.slnx --configuration Release --no-build
-
-      - name: SonarQube Placeholder
-        if: ${{ false }}
+      - name: Test with Coverage
         run: |
-          echo "Configure SONAR_TOKEN and SONAR_HOST_URL secrets, then add scanner begin/end commands."
+          dotnet-coverage collect \
+            "dotnet test SonarGithubActions.slnx -c Release --no-build" \
+            -f xml -o coverage.xml
+
+      - name: SonarCloud End Analysis
+        if: ${{ env.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.login="${SONAR_TOKEN}"
+
+      - name: Test (no SonarCloud — PR / fork)
+        # Fallback when SONAR_TOKEN is not set (public forks, draft PRs)
+        if: ${{ env.SONAR_TOKEN == '' }}
+        run: dotnet test SonarGithubActions.slnx -c Release --no-build --verbosity normal
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: build-test-analyze
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t sonar-demo:${{ github.sha }} .
+        working-directory: 08-sonarqube-github-actions

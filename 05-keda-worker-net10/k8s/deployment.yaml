@@ -1,0 +1,41 @@
+# Kubernetes Deployment for KedaWorker
+# Apply: kubectl apply -f k8s/
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-order-worker
+  namespace: default
+  labels:
+    app: keda-order-worker
+spec:
+  # replicas start at 1; KEDA ScaledObject overrides this based on queue depth
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keda-order-worker
+  template:
+    metadata:
+      labels:
+        app: keda-order-worker
+    spec:
+      containers:
+        - name: worker
+          image: keda-order-worker:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            # Swap InMemoryQueue for real Service Bus connection:
+            # - name: AzureServiceBus__ConnectionString
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: servicebus-secret
+            #       key: connectionString
+            - name: DOTNET_ENVIRONMENT
+              value: Production
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

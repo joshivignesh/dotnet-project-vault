@@ -1,17 +1,17 @@
 # .NET Project Vault
 
-A curated collection of modern .NET 10 projects by Vignesh Joshi, focused on backend architecture, cloud-native systems, full-stack delivery, DevOps, and production-minded engineering.
+A hands-on collection of .NET 10 projects by Vignesh Joshi, demonstrating modern backend systems, APIs, real-time features, distributed services, and cloud-native deployments.
 
-## Why this repo exists
+## What this is
 
-This repository is designed to showcase current-stack .NET engineering work in a way that is easy for recruiters, hiring managers, and technical reviewers to evaluate.
+I built this repository to show actual engineering work, not homework assignments. Each project is a real problem solved with current-day .NET tools:
+- properly layered and tested backend services
+- production-grade APIs with auth and validation
+- full-stack integrations (Next.js + .NET)
+- cloud deployment patterns (Azure, Vercel, Railway)
+- DevOps practices (CI/CD, code quality gates, container orchestration)
 
-The goal is not to dump random code samples. The goal is to present a focused set of practical projects that demonstrate:
-- backend design
-- API development
-- full-stack integration
-- cloud and DevOps awareness
-- modern .NET ecosystem relevance
+No bloat. No outdated frameworks. Just solid .NET work.
 
 ## Technology baseline
 
@@ -25,53 +25,72 @@ The goal is not to dump random code samples. The goal is to present a focused se
 
 ## Project index
 
-| Project | Focus | Status |
-|---|---|---|
-| 01-aspnetcore10-clean-architecture | API structure, clean layering, enterprise patterns | Scaffolded |
-| 02-minimal-api-jwt-openapi31 | Minimal APIs, auth, modern API docs | Tested + CI wired |
-| 03-ef-core10-vector-search | AI-adjacent data patterns with modern EF Core | Scaffolded |
-| 04-signalr-realtime-dashboard | Real-time communication patterns | Planned |
-| 05-keda-worker-net10 | Worker service autoscaling concepts | Scaffolded |
-| 06-aspire13-microservices | Distributed app orchestration | Scaffolded |
-| 07-rate-limiting-middleware | Middleware and request pipeline engineering | Scaffolded |
-| 08-sonarqube-github-actions | Code quality and CI integration | Scaffolded |
-| FULLSTACK-01-nextjs15-dotnet10-jobboard | Modern frontend + .NET backend full-stack app | Vertical slice 1 complete |
-| FULLSTACK-02-blazor-saas-platform | .NET-centric full-stack SaaS sample | Planned |
+| Project | Focus | Tests | Status |
+|---------|-------|-------|--------|
+| [01-aspnetcore10-clean-architecture](01-aspnetcore10-clean-architecture/README.md) | Clean Architecture, CQRS, MediatR, EF Core | 9 ✅ | **Complete** |
+| [02-minimal-api-jwt-openapi31](02-minimal-api-jwt-openapi31/README.md) | Minimal APIs, JWT auth, OpenAPI 3.1 | 4 ✅ | **Complete** |
+| [03-ef-core10-vector-search](03-ef-core10-vector-search/README.md) | Semantic vector search, cosine similarity | 7 ✅ | **Complete** |
+| [04-signalr-realtime-dashboard](04-signalr-realtime-dashboard/README.md) | Real-time SignalR hub, live metrics SPA | 4 ✅ | **Complete** |
+| [05-keda-worker-net10](05-keda-worker-net10/README.md) | Worker service, KEDA autoscaling, K8s manifests | 6 ✅ | **Complete** |
+| [06-aspire13-microservices](06-aspire13-microservices/README.md) | .NET Aspire 9 orchestration, microservices | — | In Progress |
+| [07-rate-limiting-middleware](07-rate-limiting-middleware/README.md) | 4 rate limiting strategies, 429 behavior | 8 ✅ | **Complete** |
+| [08-sonarqube-github-actions](08-sonarqube-github-actions/README.md) | SonarCloud CI pipeline, coverage, quality gates | 36 ✅ | **Complete** |
+| [FULLSTACK-01-nextjs15-dotnet10-jobboard](FULLSTACK-01-nextjs15-dotnet10-jobboard/README.md) | Next.js 15 + .NET 10 full-stack job board | — | Vertical slices complete |
+| [FULLSTACK-02-blazor-saas-platform](FULLSTACK-02-blazor-saas-platform/README.md) | Blazor + .NET SaaS platform | — | Planned |
 
-## Recruiter view
+## Quick read
 
-This repository is meant to answer a few simple questions quickly:
-- Can this developer build modern .NET systems?
-- Can this developer design APIs and production-ready backend services?
-- Can this developer ship full-stack applications as well?
-- Does this developer understand cloud, CI/CD, and maintainable architecture?
+If you have 10 minutes:
+- Check [01-clean-architecture](01-aspnetcore10-clean-architecture) for CQRS + domain modeling
+- Check [07-rate-limiting](07-rate-limiting-middleware) for middleware patterns + 4 limiter algorithms
+- Check [08-sonarqube](08-sonarqube-github-actions) for CI/CD integration and code quality gates
+- Check [FULLSTACK-01](FULLSTACK-01-nextjs15-dotnet10-jobboard) to see backend + frontend working together
 
 ## Related repositories
 
 - [personal-profile](https://github.com/joshivignesh/personal-profile)
 - [js-fullstack-vault](https://github.com/joshivignesh/js-fullstack-vault)
 
-## How to navigate
+## How to navigate this repo
 
-Start with:
-1. FULLSTACK-01-nextjs15-dotnet10-jobboard
-2. 01-aspnetcore10-clean-architecture
-3. 07-rate-limiting-middleware
-4. 06-aspire13-microservices
+Each project has its own README with a quick-start guide, architecture notes, and test instructions. You can run any of them locally in ~5 minutes.
+
+**By interest:**
+- **Want to see clean architecture?** Start with [01-clean-architecture](01-aspnetcore10-clean-architecture/README.md)
+- **Want to understand rate limiting & middleware?** Check [07-rate-limiting](07-rate-limiting-middleware/README.md)
+- **Want to see a full-stack app?** See [FULLSTACK-01](FULLSTACK-01-nextjs15-dotnet10-jobboard/README.md)
+- **Interested in CI/CD and code quality?** Look at [08-sonarqube](08-sonarqube-github-actions/README.md)
+- **Want to see real-time features?** Try [04-signalr-dashboard](04-signalr-realtime-dashboard/README.md)
 
 ## Status
 
-Active. This repository is being assembled as a modern-stack showcase centered on .NET 10.
+7 of 8 core projects complete. FULLSTACK-01 fully implemented. See [STATUS.md](STATUS.md) for detailed progress.
 
-## Deployment Notes
+## Running projects locally
 
-- See DEPLOYMENT.md for current readiness and next actions.
-- See docs/screenshots/README.md for screenshot placeholders.
+```bash
+# Clone and pick a project
+cd 01-aspnetcore10-clean-architecture
+dotnet run --project src/CleanArchitecture.Api
+# API at http://localhost:5000
+```
+
+Each project includes OpenAPI/Swagger for interactive API docs.
+
+## Deployment & Live Demos
+
+**FULLSTACK-01 (Next.js + .NET):**
+- Frontend: Ready for Vercel deployment (secrets needed)
+- Backend API: Ready for Azure Container Apps deployment (secrets needed)
+- Database: Azure SQL Server
+
+See [FULLSTACK-01 README](FULLSTACK-01-nextjs15-dotnet10-jobboard/README.md) for deployment instructions and live links once configured.
 
 ## Contact
 
-Add portfolio, LinkedIn, and email links here.
+- **LinkedIn:** [joshivignesh](https://www.linkedin.com/in/joshivignesh/)
+- **Email:** joshi.vignesh@gmail.com
 
 ## License
 
-Add your preferred license here.
+MIT License — feel free to use and modify these projects.

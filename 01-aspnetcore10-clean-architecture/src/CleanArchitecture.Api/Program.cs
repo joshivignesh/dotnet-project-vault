@@ -1,41 +1,67 @@
+using CleanArchitecture.Application;
+using CleanArchitecture.Application.Products.Commands;
+using CleanArchitecture.Application.Products.Queries;
+using CleanArchitecture.Infrastructure;
+using CleanArchitecture.Infrastructure.Data;
+using MediatR;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Seed demo data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await AppDbContext.SeedAsync(db);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // Scalar UI: GET /scalar
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "CleanArchitecture API v1"));
 }
 
-app.UseHttpsRedirection();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+   .WithName("Health").WithTags("Health");
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Products endpoints
+var products = app.MapGroup("/api/products").WithTags("Products");
 
-app.MapGet("/weatherforecast", () =>
+products.MapGet("/", async (IMediator mediator, string? category, CancellationToken ct) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var result = await mediator.Send(new GetAllProductsQuery(category), ct);
+    return Results.Ok(result);
+}).WithName("GetAllProducts").WithSummary("List all products, optionally filtered by category");
+
+products.MapGet("/{id:guid}", async (Guid id, IMediator mediator, CancellationToken ct) =>
+{
+    var result = await mediator.Send(new GetProductByIdQuery(id), ct);
+    return result is null ? Results.NotFound() : Results.Ok(result);
+}).WithName("GetProductById").WithSummary("Get a product by ID");
+
+products.MapPost("/", async (CreateProductCommand command, IMediator mediator, CancellationToken ct) =>
+{
+    var result = await mediator.Send(command, ct);
+    return Results.Created($"/api/products/{result.Id}", result);
+}).WithName("CreateProduct").WithSummary("Create a new product");
+
+products.MapPut("/{id:guid}", async (Guid id, UpdateProductCommand command, IMediator mediator, CancellationToken ct) =>
+{
+    var updated = command with { Id = id };
+    var success = await mediator.Send(updated, ct);
+    return success ? Results.NoContent() : Results.NotFound();
+}).WithName("UpdateProduct").WithSummary("Update an existing product");
+
+products.MapDelete("/{id:guid}", async (Guid id, IMediator mediator, CancellationToken ct) =>
+{
+    var success = await mediator.Send(new DeleteProductCommand(id), ct);
+    return success ? Results.NoContent() : Results.NotFound();
+}).WithName("DeleteProduct").WithSummary("Delete a product");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

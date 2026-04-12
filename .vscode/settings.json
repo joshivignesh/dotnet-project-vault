@@ -3,6 +3,10 @@
         "/^Set-Location \"e:/Vignesh/My Code workouts/GitHub/dotnet-project-vault\"; dotnet test \"FULLSTACK-01-nextjs15-dotnet10-jobboard/backend/tests/JobBoard\\.Api\\.IntegrationTests/JobBoard\\.Api\\.IntegrationTests\\.csproj\"$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^cd \"e:\\\\Vignesh\\\\My Code workouts\\\\GitHub\\\\dotnet-project-vault\\\\01-aspnetcore10-clean-architecture\\\\src\\\\CleanArchitecture\\.Application\" ; dotnet add package MediatR --version 12\\.4\\.1 ; dotnet add package FluentValidation --version 11\\.11\\.0 ; dotnet add package FluentValidation\\.DependencyInjectionExtensions --version 11\\.11\\.0$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

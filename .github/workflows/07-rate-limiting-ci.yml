@@ -1,0 +1,46 @@
+name: 07 – Rate Limiting Middleware CI
+
+on:
+  push:
+    paths:
+      - '07-rate-limiting-middleware/**'
+      - '.github/workflows/07-rate-limiting-ci.yml'
+  pull_request:
+    paths:
+      - '07-rate-limiting-middleware/**'
+
+defaults:
+  run:
+    working-directory: 07-rate-limiting-middleware
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Test
+        run: dotnet test --no-build -c Release --verbosity normal
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t rate-limiting-demo:${{ github.sha }} .
+        working-directory: 07-rate-limiting-middleware

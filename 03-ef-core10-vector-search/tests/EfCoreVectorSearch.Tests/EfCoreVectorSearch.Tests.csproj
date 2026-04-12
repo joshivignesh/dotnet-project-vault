@@ -20,6 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EfCoreVectorSearch.Domain\EfCoreVectorSearch.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EfCoreVectorSearch.Domain\EfCoreVectorSearch.Domain.csproj" />
     <ProjectReference Include="..\..\src\EfCoreVectorSearch.Infrastructure\EfCoreVectorSearch.Infrastructure.csproj" />
   </ItemGroup>
 

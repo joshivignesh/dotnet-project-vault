@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\src\KedaWorker.Worker\KedaWorker.Worker.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\KedaWorker.Worker\KedaWorker.Worker.csproj" />
+  </ItemGroup>
+
 </Project>

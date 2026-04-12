@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/SignalRDashboard.Api/SignalRDashboard.Api.csproj" />
+  <Project Path="tests/SignalRDashboard.Tests/SignalRDashboard.Tests.csproj" />
+</Solution>

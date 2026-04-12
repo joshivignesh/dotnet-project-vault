@@ -1,41 +1,53 @@
+using SonarGithubActions.Api.Models;
+using SonarGithubActions.Api.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<OrderCalculator>();
+builder.Services.AddSingleton<TextAnalyzer>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
     app.MapOpenApi();
-}
 
-app.UseHttpsRedirection();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", utc = DateTime.UtcNow }))
+   .WithName("Health").WithTags("Health");
 
-var summaries = new[]
+// ── Order pricing endpoints ────────────────────────────────────────────────
+var orders = app.MapGroup("/api/orders").WithTags("Orders");
+
+orders.MapPost("/calculate", (OrderRequest request, OrderCalculator calculator) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    if (request.Items is null || request.Items.Count == 0)
+        return Results.BadRequest(new { error = "Order must contain at least one item." });
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var result = calculator.Calculate(request);
+    return Results.Ok(result);
 })
-.WithName("GetWeatherForecast");
+.WithName("CalculateOrder")
+.WithSummary("Calculate order total with tax and tier discounts");
+
+orders.MapGet("/discount-tiers", () => Results.Ok(OrderCalculator.DiscountTiers))
+.WithName("GetDiscountTiers")
+.WithSummary("Returns current discount tier thresholds");
+
+// ── Text analysis endpoints ────────────────────────────────────────────────
+var text = app.MapGroup("/api/text").WithTags("Text Analysis");
+
+text.MapPost("/analyze", (TextRequest request, TextAnalyzer analyzer) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Content))
+        return Results.BadRequest(new { error = "Content must not be empty." });
+
+    var result = analyzer.Analyze(request.Content);
+    return Results.Ok(result);
+})
+.WithName("AnalyzeText")
+.WithSummary("Returns word count, sentence count, and readability metrics");
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// Expose for WebApplicationFactory
+public partial class Program { }

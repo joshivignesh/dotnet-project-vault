@@ -1,0 +1,40 @@
+# KEDA ScaledObject — scales the worker Deployment based on Azure Service Bus queue depth.
+# Requires: KEDA installed in the cluster (helm install keda kedacore/keda)
+# Requires: TriggerAuthentication with Service Bus connection string secret
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: keda-order-worker-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: keda-order-worker
+  # Scale to zero replicas when queue is empty
+  minReplicaCount: 0
+  # Hard cap at 10 concurrent worker pods
+  maxReplicaCount: 10
+  # Wait 60s before scaling down (avoids flapping)
+  cooldownPeriod: 60
+  triggers:
+    - type: azure-servicebus
+      metadata:
+        # Trigger scale-up when queue depth exceeds 5 messages per replica
+        queueName: orders
+        messageCount: "5"
+        activationMessageCount: "1"
+        namespace: YOUR_SERVICEBUS_NAMESPACE
+      authenticationRef:
+        name: keda-servicebus-auth
+---
+# TriggerAuthentication — references the Kubernetes secret with the connection string
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-servicebus-auth
+  namespace: default
+spec:
+  secretTargetRef:
+    - parameter: connection
+      name: servicebus-secret
+      key: connectionString

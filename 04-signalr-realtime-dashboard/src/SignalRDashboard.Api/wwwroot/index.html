@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time System Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d27;
+      --border: #2a2d3e;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --accent: #6366f1;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    #status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+    }
+
+    #status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      transition: background 0.3s;
+    }
+
+    #status-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.3s;
+    }
+
+    .card-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .card-value {
+      font-size: 2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    .card-unit {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--muted);
+      margin-left: 3px;
+    }
+
+    .card-bar {
+      margin-top: 12px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .card-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.6s ease, background-color 0.3s;
+    }
+
+    .chart-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .chart-section h2 {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    #sparkline-canvas {
+      width: 100%;
+      height: 120px;
+      display: block;
+    }
+
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>System <span>Dashboard</span></h1>
+  <div id="status-pill">
+    <div id="status-dot"></div>
+    <span id="status-text">Connecting…</span>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-label">CPU Usage</div>
+    <div class="card-value" id="cpu-val">—<span class="card-unit">%</span></div>
+    <div class="card-bar"><div class="card-bar-fill" id="cpu-bar" style="width:0%"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Memory Usage</div>
+    <div class="card-value" id="mem-val">—<span class="card-unit">%</span></div>
+    <div class="card-bar"><div class="card-bar-fill" id="mem-bar" style="width:0%"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Requests / sec</div>
+    <div class="card-value" id="rps-val">—<span class="card-unit">rps</span></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Avg Response</div>
+    <div class="card-value" id="resp-val">—<span class="card-unit">ms</span></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Active Connections</div>
+    <div class="card-value" id="conn-val">—</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Error Rate</div>
+    <div class="card-value" id="err-val">—<span class="card-unit">%</span></div>
+  </div>
+</div>
+
+<div class="chart-section">
+  <h2>CPU % — last 60 readings</h2>
+  <canvas id="sparkline-canvas"></canvas>
+</div>
+
+<footer>
+  Powered by <a href="https://learn.microsoft.com/aspnet/core/signalr/introduction" target="_blank">ASP.NET Core SignalR</a>
+  &nbsp;·&nbsp; .NET 10 &nbsp;·&nbsp;
+  <a href="https://github.com/vignesh-joshi-dev/dotnet-project-vault" target="_blank">Source</a>
+</footer>
+
+<script>
+  const MAX_HISTORY = 60;
+  let cpuHistory = [];
+
+  const dot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+
+  function setStatus(connected, text) {
+    dot.className = connected ? 'connected' : '';
+    statusText.textContent = text;
+  }
+
+  function barColor(pct) {
+    if (pct > 80) return '#ef4444';
+    if (pct > 60) return '#eab308';
+    return '#6366f1';
+  }
+
+  function updateCard(id, value, unit) {
+    const el = document.getElementById(id + '-val');
+    if (el) el.childNodes[0].textContent = value;
+  }
+
+  function updateBar(id, pct) {
+    const bar = document.getElementById(id + '-bar');
+    if (!bar) return;
+    bar.style.width = Math.min(pct, 100) + '%';
+    bar.style.backgroundColor = barColor(pct);
+  }
+
+  function drawSparkline(data) {
+    const canvas = document.getElementById('sparkline-canvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
+    if (data.length < 2) return;
+    const min = 0, max = 100;
+    const step = W / (MAX_HISTORY - 1);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Fill gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, 'rgba(99,102,241,0.3)');
+    grad.addColorStop(1, 'rgba(99,102,241,0)');
+
+    ctx.beginPath();
+    data.forEach((val, i) => {
+      const x = i * step;
+      const y = H - ((val - min) / (max - min)) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.lineTo((data.length - 1) * step, H);
+    ctx.lineTo(0, H);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    data.forEach((val, i) => {
+      const x = i * step;
+      const y = H - ((val - min) / (max - min)) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Connect to SignalR hub
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl('/hubs/dashboard')
+    .withAutomaticReconnect([0, 1000, 3000, 5000])
+    .configureLogging(signalR.LogLevel.Warning)
+    .build();
+
+  connection.on('ReceiveMetrics', (m) => {
+    updateCard('cpu', m.cpuPercent);   updateBar('cpu', m.cpuPercent);
+    updateCard('mem', m.memoryPercent); updateBar('mem', m.memoryPercent);
+    updateCard('rps', m.requestsPerSecond);
+    updateCard('resp', m.avgResponseMs);
+    updateCard('conn', m.activeConnections);
+
+    const errPct = (m.errorRate * 100).toFixed(2);
+    document.getElementById('err-val').childNodes[0].textContent = errPct;
+
+    cpuHistory.push(m.cpuPercent);
+    if (cpuHistory.length > MAX_HISTORY) cpuHistory.shift();
+    drawSparkline(cpuHistory);
+  });
+
+  connection.onreconnecting(() => setStatus(false, 'Reconnecting…'));
+  connection.onreconnected(() => setStatus(true, 'Live'));
+  connection.onclose(() => setStatus(false, 'Disconnected'));
+
+  async function start() {
+    try {
+      await connection.start();
+      setStatus(true, 'Live');
+    } catch (err) {
+      setStatus(false, 'Failed — retrying');
+      setTimeout(start, 5000);
+    }
+  }
+
+  start();
+  window.addEventListener('resize', () => drawSparkline(cpuHistory));
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+name: 04 - SignalR Dashboard CI
+
+on:
+  push:
+    paths:
+      - '04-signalr-realtime-dashboard/**'
+  pull_request:
+    paths:
+      - '04-signalr-realtime-dashboard/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 04-signalr-realtime-dashboard
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore SignalRDashboard.slnx
+
+      - name: Build
+        run: dotnet build SignalRDashboard.slnx --no-restore -c Release
+
+      - name: Test
+        run: dotnet test SignalRDashboard.slnx --no-build -c Release
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    defaults:
+      run:
+        working-directory: 04-signalr-realtime-dashboard
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t signalr-dashboard:${{ github.sha }} .

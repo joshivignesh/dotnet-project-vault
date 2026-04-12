@@ -20,8 +20,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Title).HasMaxLength(200).IsRequired();
             entity.Property(x => x.Content).HasMaxLength(4000).IsRequired();
+            entity.Property(x => x.Category).HasMaxLength(100).HasDefaultValue("General");
             entity.Property(x => x.Embedding).HasConversion(converter);
-            entity.HasIndex(x => x.Title);
+            entity.HasIndex(x => x.Category);
             entity.HasIndex(x => x.CreatedUtc);
         });
     }
